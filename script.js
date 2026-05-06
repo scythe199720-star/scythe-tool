@@ -1,4 +1,5 @@
 const imageInput = document.getElementById('imageInput');
+const videoInput = document.getElementById('videoInput');
 const logoInput = document.getElementById('logoInput');
 const watermarkText = document.getElementById('watermarkText');
 const textColor = document.getElementById('textColor');
@@ -7,31 +8,25 @@ const positionSelect = document.getElementById('positionSelect');
 const canvas = document.getElementById('mainCanvas');
 const ctx = canvas.getContext('2d');
 const batchContainer = document.getElementById('batchPreviewContainer');
+const videoPreview = document.getElementById('videoPreview');
+const videoLoading = document.getElementById('videoLoading');
+const renderProgress = document.getElementById('renderProgress');
 const downloadAllBtn = document.getElementById('downloadAllBtn');
 const toggleSwitch = document.querySelector('#checkbox');
 
 let originalFiles = [];
 let logoImage = null;
-
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
-}
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({ log: true });
 
 // Dark Mode Logic
 toggleSwitch.addEventListener('change', (e) => {
     const theme = e.target.checked ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-    gsap.from(".container", { duration: 0.4, opacity: 0.8 });
 });
 
-if (localStorage.getItem('theme') === 'dark') {
-    toggleSwitch.checked = true;
-    document.documentElement.setAttribute('data-theme', 'dark');
-}
-
-// Logo Loader
+// Load Logo
 logoInput.onchange = (e) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -42,11 +37,46 @@ logoInput.onchange = (e) => {
     reader.readAsDataURL(e.target.files[0]);
 };
 
+// Handle Images
 imageInput.onchange = (e) => {
+    videoPreview.style.display = 'none';
     originalFiles = Array.from(e.target.files);
     processAll();
 };
 
+// Handle Video
+videoInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    batchContainer.innerHTML = '';
+    videoLoading.style.display = 'block';
+    
+    if (!ffmpeg.isLoaded()) await ffmpeg.load();
+    
+    const name = 'input_video.mp4';
+    ffmpeg.FS('writeFile', name, await fetchFile(file));
+    
+    const text = watermarkText.value || "SCYTHE PROJECT";
+    const color = textColor.value.replace('#', '0x');
+    const size = fontSizeInput.value;
+    
+    // Command FFmpeg sederhana untuk teks watermark
+    await ffmpeg.run(
+        '-i', name,
+        '-vf', `drawtext=text='${text}':x=w-tw-20:y=h-th-20:fontsize=${size}:fontcolor=${color}@0.5`,
+        '-preset', 'ultrafast',
+        'output.mp4'
+    );
+    
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+    videoPreview.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+    videoPreview.style.display = 'block';
+    videoLoading.style.display = 'none';
+    downloadAllBtn.style.display = 'block';
+};
+
+// Sync settings
 [watermarkText, textColor, fontSizeInput, positionSelect].forEach(el => {
     el.oninput = processAll;
 });
@@ -65,14 +95,11 @@ async function processAll() {
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    
                     drawWatermark();
-                    
                     const resultImg = document.createElement('img');
                     resultImg.src = canvas.toDataURL('image/png');
                     resultImg.className = 'batch-result';
                     batchContainer.appendChild(resultImg);
-                    gsap.from(resultImg, { scale: 0.5, opacity: 0, duration: 0.3 });
                     resolve();
                 };
                 img.src = ev.target.result;
@@ -103,10 +130,18 @@ function drawWatermark() {
 }
 
 downloadAllBtn.onclick = () => {
+    // Download Images
     document.querySelectorAll('.batch-result').forEach((img, i) => {
         const a = document.createElement('a');
-        a.download = `scythe_${i+1}.png`;
+        a.download = `scythe_img_${i+1}.png`;
         a.href = img.src;
         a.click();
     });
+    // Download Video if exists
+    if (videoPreview.src) {
+        const a = document.createElement('a');
+        a.download = `scythe_video.mp4`;
+        a.href = videoPreview.src;
+        a.click();
+    }
 };
