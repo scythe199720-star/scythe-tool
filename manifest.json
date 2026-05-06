@@ -1,0 +1,21 @@
+{
+  "name": "Scythe Project Watermark",
+  "short_name": "ScytheTool",
+  "description": "Tool Batch Watermark Profesional dari Scythe Project",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#ff0000",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/ff0000/ffffff?text=S",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/ff0000/ffffff?text=Scythe",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
