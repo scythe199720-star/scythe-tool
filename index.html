@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scythe Project | Watermark Tool</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>Scythe Project</h2>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round"></div>
+                </label>
+                <span>Dark Mode</span>
+            </div>
+        </header>
+
+        <div class="upload-section">
+            <div class="input-group">
+                <label for="imageInput" class="btn-main">Pilih Banyak Gambar</label>
+                <input type="file" id="imageInput" accept="image/*" multiple>
+            </div>
+            <div class="input-group">
+                <label for="logoInput" class="btn-sub">Upload Logo (PNG)</label>
+                <input type="file" id="logoInput" accept="image/*">
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="watermarkText" placeholder="Teks Watermark...">
+            <div class="settings-grid">
+                <input type="color" id="textColor" value="#ffffff">
+                <input type="number" id="fontSizeInput" value="50" min="10">
+                <select id="positionSelect">
+                    <option value="bottom-right">Kanan Bawah</option>
+                    <option value="bottom-left">Kiri Bawah</option>
+                    <option value="top-right">Kanan Atas</option>
+                    <option value="top-left">Kiri Atas</option>
+                    <option value="center">Tengah</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="statusUpdate"></div>
+        <div id="batchPreviewContainer"></div>
+
+        <button id="downloadAllBtn" class="btn-download" style="display: none;">Unduh Semua Gambar</button>
+        <canvas id="mainCanvas" style="display: none;"></canvas>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
